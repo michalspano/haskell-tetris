@@ -35,13 +35,14 @@ tetrisGame = Game
 --------------------------------------------------------------------------------
 -- * The various parts of the Tetris game implementation
 
+type Piece = (Pos, Shape)
 type Pos   = (Int, Int)
 
 -- | The state of the game consists of three parts:
 data Tetris = Tetris 
-  { piece  :: (Pos, Shape)  -- ^ The position and shape of the falling piece
-  , well   :: Shape         -- ^ The well (the playing field), where the falling pieces pile up
-  , shapes :: [Shape]       -- ^ An infinite supply of random shapes
+  { piece  :: Piece    -- ^ The position and shape of the falling piece
+  , well   :: Shape    -- ^ The well (the playing field), where the falling pieces pile up
+  , shapes :: [Shape]  -- ^ An infinite supply of random shapes
   }
 
 -- | The size of the well
@@ -54,11 +55,11 @@ wellSize   = (wellWidth, wellHeight)
 
 -- | Starting position for falling pieces
 startPosition :: Pos
-startPosition = (wellWidth `div` 2 - 1, 0)
+startPosition = (0, wellWidth `div` 2 - 1)
 
 -- | Pos addition
 add :: Pos -> Pos -> Pos
-(x1, y1) `add` (x2, y2) = (x1 + x2, y1 + y2)
+(h1, w1) `add` (h2, w2) = (h1 + h2, w1 + w2)
 
 -- | Move the falling piece into position
 place :: (Pos, Shape) -> Shape
