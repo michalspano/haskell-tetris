@@ -6,7 +6,7 @@ License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
 
-- You can open the game in your browser with the followin URL: http://127.0.0.1:8023
+- You can open the game in your browser with the following URL: http://127.0.0.1:8023
 - More info about ThreepennyGUI: https://wiki.haskell.org/Threepenny-gui
 -}
  

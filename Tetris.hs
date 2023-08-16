@@ -5,6 +5,9 @@ Copyright   : (c) TDA555/DIT441, Introduction to Functional Programming
 License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
+
+Authors     : <list your names here>
+Lab group   : <group number>
 -}
 
 module Main where
