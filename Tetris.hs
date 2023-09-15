@@ -51,7 +51,7 @@ wellWidth  = 10
 wellHeight = 20
 
 wellSize :: (Int, Int)
-wellSize   = (wellWidth, wellHeight)
+wellSize   = (wellHeight, wellWidth)
 
 -- | Starting position for falling pieces
 startPosition :: Pos
