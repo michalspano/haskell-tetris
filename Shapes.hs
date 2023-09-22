@@ -6,8 +6,8 @@ License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
 
-Authors     : <list your names here>
-Lab group   : <group number>
+Authors     : Joel Rejholt, Michal Spano, Oscar Djurvall
+Lab group   : 35
 -}
 
 module Shapes where
@@ -79,34 +79,52 @@ allShapes = [Shape (makeSquares s) | s <- shapes]
 
 -- ** A1
 emptyShape :: (Int, Int) -> Shape
-emptyShape = error "A1 emptyShape undefined"
+emptyShape (rows, cols) = Shape (replicate rows (replicate cols Nothing))
 
 -- ** A2
 
--- | The size (width and height) of a shape
+-- | The size (rows and columns) of a shape
 shapeSize :: Shape -> (Int, Int)
-shapeSize = error "A2 shapeSize undefined"
+shapeSize s = (rowCount, colCount) 
+  where
+    rows'    = rows s
+    rowCount = length rows'
+    colCount = length (head rows')
 
 -- ** A3
 
 -- | Count how many non-empty squares a shape contains
+
 blockCount :: Shape -> Int
-blockCount = error "A3 blockCount undefined"
+blockCount s = length [square | square <- squares, nonEmpty square]
+   where
+      squares = concat (rows s)
+      nonEmpty square = not (isNothing square) -- alt. `isJust` can be used
 
 -- * The Shape invariant
 
 -- ** A4
 -- | Shape invariant (shapes have at least one row, at least one column,
 -- and are rectangular)
+
 prop_Shape :: Shape -> Bool
-prop_Shape = error "A4 prop_Shape undefined"
+prop_Shape s
+  | rowCount == 0 || colCount == 0 = False  
+  | otherwise                      = isRectangular s 
+  where
+    (rowCount, colCount) = shapeSize s
+
+isRectangular :: Shape -> Bool
+isRectangular (Shape rows) = and [n == length s' | s' <- rows]
+  where
+    n = length (head rows)
 
 -- * Test data generators
 
 -- ** A5
 -- | A random generator for colours
 genColour :: Gen Colour
-genColour = error "A5 genColour undefined"
+genColour = elements [minBound .. maxBound]
 
 instance Arbitrary Colour where
   arbitrary = genColour
@@ -114,7 +132,7 @@ instance Arbitrary Colour where
 -- ** A6
 -- | A random generator for shapes
 genShape :: Gen Shape
-genShape = error "A6 genShape undefined"
+genShape = elements allShapes
 
 instance Arbitrary Shape where
   arbitrary = genShape
@@ -124,22 +142,48 @@ instance Arbitrary Shape where
 -- ** A7
 -- | Rotate a shape 90 degrees
 rotateShape :: Shape -> Shape
-rotateShape = error "A7 rotateShape undefined"
+rotateShape (Shape rows) = Shape (reverse (transpose rows))
+
+-- Additionally, we've created a property for the `rotateShape`
+-- function.
+prop_rotateShape :: Shape -> Bool
+prop_rotateShape shape = prop_Shape shape && idempotence4 shape
+   where
+      idempotence4 shape = (iterate (rotateShape) shape) !! 4 == shape
 
 -- ** A8
 -- | shiftShape adds empty squares above and to the left of the shape
 shiftShape :: (Int, Int) -> Shape -> Shape
-shiftShape = error "A8 shiftShape undefined"
+shiftShape (rows, cols) s = shiftRight cols (shiftDown rows s)
+
+shiftDown :: Int -> Shape -> Shape
+shiftDown 0 s = s
+shiftDown n (Shape rows)
+  | n < 0     = shiftDown (n+1) (Shape (rows ++ [newRow]))
+  | otherwise = shiftDown (n-1) (Shape ([newRow] ++ rows))
+  where
+    (_, colCount) = shapeSize (Shape rows)
+    newRow        = replicate colCount Nothing
+
+shiftRight :: Int -> Shape -> Shape
+shiftRight 0 s = s
+shiftRight n (Shape rows)
+  | n < 0      = shiftRight (n+1) (Shape [row ++ [Nothing] | row <- rows]) 
+  | otherwise  = shiftRight (n-1) (Shape [[Nothing] ++ row | row <- rows])
 
 -- ** A9
 -- | padShape adds empty sqaure below and to the right of the shape
 padShape :: (Int, Int) -> Shape -> Shape
-padShape = error "A9 padShape undefined"
+padShape (rows, cols) = shiftShape (negate rows, negate cols)
 
 -- ** A10
 -- | pad a shape to a given size
 padShapeTo :: (Int, Int) -> Shape -> Shape
-padShapeTo = error "A10 padShapeTo undefined"
+padShapeTo (rows, cols) s = padShape (padRows, padCols) s
+   where
+      padRows = max 0 (rows - rowCount)
+      padCols = max 0 (cols - colCount)
+      (rowCount, colCount) = shapeSize s
 
 -- * Comparing and combining shapes
 
