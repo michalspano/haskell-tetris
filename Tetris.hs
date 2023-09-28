@@ -6,8 +6,8 @@ License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
 
-Authors     : <list your names here>
-Lab group   : <group number>
+Authors     : Michal Spano, Oscar Djurvall, Joel Rejholt
+Lab group   : 35
 -}
 
 module Main where
@@ -67,16 +67,24 @@ place (v, s) = shiftShape v s
 
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
-prop_Tetris t = True -- incomplete !!!
+prop_Tetris t = prop_Shape s && wellSize == wellSize'
+  where
+    (_, s)    = piece t
+    wellSize' = shapeSize $ well t
 
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
-addWalls s = s -- incomplete !!!
+addWalls s = Shape $ [outer] ++ inner ++ [outer]
+  where
+    rs    = rows s
+    rSize = length (head rs) + 2 -- add additional 2 for walls
+    outer = replicate rSize (Just Black)
+    inner = map (\r -> [Just Black] ++ r ++ [Just Black]) rs
 
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
-drawTetris (Tetris (v, p) w _) = w -- incomplete !!!
+drawTetris (Tetris (p, s) w _) = addWalls $ combine (shiftShape p s) w
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
@@ -85,7 +93,14 @@ startTetris rs = Tetris (startPosition, piece) well supply
   well         = emptyShape wellSize
   piece:supply = repeat (allShapes !! 1) -- incomplete !!!
 
+move :: (Int, Int) -> Tetris -> Tetris
+move p (Tetris (p', s) w ss) = Tetris (p `add` p', s) w ss 
+
+tick :: Tetris -> Maybe (Int, Tetris)
+tick t = Just (0, move (1, 0) t) 
+
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris action t = Just (0, t) -- incomplete !!!
+stepTetris Tick = tick
+stepTetris _    = undefined

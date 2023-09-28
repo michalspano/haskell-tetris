@@ -6,14 +6,14 @@ License     : BSD
 Maintainer  : alexg@chalmers.se
 Stability   : experimental
 
-Authors     : Joel Rejholt, Michal Spano, Oscar Djurvall
+Authors     : Michal Spano, Oscar Djurvall, Joel Rejholt
 Lab group   : 35
 -}
 
 module Shapes where
 
 import Data.List (transpose)
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, isJust)
 import Test.QuickCheck
 
 -- * Shapes
@@ -191,15 +191,33 @@ padShapeTo (rows, cols) s = padShape (padRows, padCols) s
 
 -- | Test if two shapes overlap
 overlaps :: Shape -> Shape -> Bool
-s1 `overlaps` s2 = error "A11 overlaps undefined"
+s1 `overlaps` s2 = or $ zipWith rowsOverlap rows1 rows2
+  where
+    (rows1, rows2) = (rows s1, rows s2) 
+
+rowsOverlap :: Row -> Row -> Bool
+r1 `rowsOverlap` r2 = or (zipWith checkInvariant r1 r2)
+  where
+    checkInvariant s1 s2 = isJust s1 && isJust s2 
 
 -- ** B2
 -- | zipShapeWith, like 'zipWith' for lists
 zipShapeWith :: (Square -> Square -> Square) -> Shape -> Shape -> Shape
-zipShapeWith = error "A12 zipShapeWith undefined"
+zipShapeWith f s1 s2 = Shape (zipWith (zipWith f) r1 r2) 
+  where
+    (r1, r2) = (rows s1, rows s2)
 
 -- ** B3
 -- | Combine two shapes. The two shapes should not overlap.
 -- The resulting shape will be big enough to fit both shapes.
 combine :: Shape -> Shape -> Shape
-s1 `combine` s2 = error "A13 zipShapeWith undefined"
+s1 `combine` s2
+   | s1 `overlaps` s2 = undefined
+   | otherwise        = zipShapeWith combineSquares s1' s2'
+   where
+      s1' = padShapeTo (max r1 r2, max c1 c2) s1
+      s2' = padShapeTo (max r1 r2, max c1 c2) s2
+      (r1, c1) = shapeSize s1
+      (r2, c2) = shapeSize s2
+      combineSquares (Just c) _   = Just c
+      combineSquares _        sq2 = sq2
