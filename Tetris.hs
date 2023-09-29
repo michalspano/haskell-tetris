@@ -65,6 +65,7 @@ add :: Pos -> Pos -> Pos
 place :: (Pos, Shape) -> Shape
 place (v, s) = shiftShape v s
 
+-- B4
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
 prop_Tetris t = prop_Shape s && wellSize == wellSize'
@@ -72,6 +73,7 @@ prop_Tetris t = prop_Shape s && wellSize == wellSize'
     (_, s)    = piece t
     wellSize' = shapeSize $ well t
 
+-- B5
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
 addWalls s = Shape $ [outer] ++ inner ++ [outer]
@@ -81,6 +83,7 @@ addWalls s = Shape $ [outer] ++ inner ++ [outer]
     outer = replicate rSize (Just Black)
     inner = map (\r -> [Just Black] ++ r ++ [Just Black]) rs
 
+-- B6
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
@@ -93,9 +96,11 @@ startTetris rs = Tetris (startPosition, piece) well supply
   well         = emptyShape wellSize
   piece:supply = repeat (allShapes !! 1) -- incomplete !!!
 
+-- B7
 move :: (Int, Int) -> Tetris -> Tetris
 move p (Tetris (p', s) w ss) = Tetris (p `add` p', s) w ss 
 
+-- B8
 tick :: Tetris -> Maybe (Int, Tetris)
 tick t = Just (0, move (1, 0) t) 
 
