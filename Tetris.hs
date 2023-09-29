@@ -87,7 +87,7 @@ addWalls s = Shape $ [outer] ++ inner ++ [outer]
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
-drawTetris (Tetris (p, s) w _) = addWalls $ combine (shiftShape p s) w
+drawTetris (Tetris p w _) = addWalls $ combine (place p) w
 
 -- | The initial game state
 startTetris :: [Double] -> Tetris
