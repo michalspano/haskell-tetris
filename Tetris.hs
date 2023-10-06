@@ -66,7 +66,7 @@ add :: Pos -> Pos -> Pos
 place :: (Pos, Shape) -> Shape
 place (v, s) = shiftShape v s
 
--- B4
+-- * Task B4
 -- | An invariant that startTetris and stepTetris should uphold
 prop_Tetris :: Tetris -> Bool
 prop_Tetris t = prop_Shape s && wellSize == wellSize'
@@ -74,7 +74,7 @@ prop_Tetris t = prop_Shape s && wellSize == wellSize'
     (_, s)    = piece t
     wellSize' = shapeSize $ well t
 
--- B5
+-- * Task B5
 -- | Add black walls around a shape
 addWalls :: Shape -> Shape
 addWalls s = Shape $ [outer] ++ inner ++ [outer]
@@ -84,7 +84,7 @@ addWalls s = Shape $ [outer] ++ inner ++ [outer]
     outer = replicate rSize (Just Black)
     inner = map (\r -> [Just Black] ++ r ++ [Just Black]) rs
 
--- B6
+-- * Task B6
 -- | Visualize the current game state. This is what the user will see
 -- when playing the game.
 drawTetris :: Tetris -> Shape
@@ -99,11 +99,11 @@ startTetris rs = Tetris (startPosition, piece) well supply
     where
       getIdx r = floor $ r * fromIntegral (length allShapes)
 
--- B7
+-- * Task B7
 move :: (Int, Int) -> Tetris -> Tetris
 move p (Tetris (p', s) w ss) = Tetris (p `add` p', s) w ss 
 
--- B8
+-- * Task B8
 tick :: Tetris -> Maybe (Int, Tetris)
 tick t
   | collision newState = dropNewPiece t 
@@ -111,8 +111,7 @@ tick t
  where
     newState = move (1, 0) t
 
--- * Task C1: Collision detection
-
+-- * Task C1: collision detection
 collision :: Tetris -> Bool
 collision (Tetris (p@(py, px), s) w _)
    | px < 0                    = True
@@ -125,7 +124,6 @@ collision (Tetris (p@(py, px), s) w _)
       (wh,ww) = shapeSize w
 
 -- * Task C3: movePiece function
-
 movePiece :: Int -> Tetris -> Tetris
 movePiece n t
   | collision newState = t
@@ -134,14 +132,13 @@ movePiece n t
     newState = move (0, n) t
 
 -- * Task C4: rotate function
-
 rotate :: Tetris -> Tetris
 rotate (Tetris (p, s) w ss) = Tetris (p, s') w ss
   where
     s' = rotateShape s
 
 -- * Task C5: adjust function (optional)
--- Will be added if time permits 
+-- (will be added if time permits)
 adjust :: Tetris -> Tetris
 adjust = undefined
 
@@ -153,7 +150,7 @@ rotatePiece t
   where
     newState = rotate t
 
--- * Task C7: Piling up
+-- * Task C7: piling up
 dropNewPiece:: Tetris -> Maybe (Int, Tetris)
 dropNewPiece (Tetris p w (s:ss)) 
   | place p' `overlaps` w' = Nothing
