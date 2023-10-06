@@ -16,6 +16,7 @@ import ConsoleGUI
 -- import ThreepennyGUI  -- either use ConsoleGUI or ThreepennyGUI
 
 import Shapes
+import Data.Maybe (isJust)
 
 --------------------------------------------------------------------------------
 -- * The code that puts all the piece together
@@ -94,7 +95,9 @@ startTetris :: [Double] -> Tetris
 startTetris rs = Tetris (startPosition, piece) well supply
  where
   well         = emptyShape wellSize
-  piece:supply = repeat (allShapes !! 1) -- incomplete !!!
+  piece:supply = map (\r -> allShapes !! getIdx r) rs
+    where
+      getIdx r = floor $ r * fromIntegral (length allShapes)
 
 -- B7
 move :: (Int, Int) -> Tetris -> Tetris
@@ -102,10 +105,77 @@ move p (Tetris (p', s) w ss) = Tetris (p `add` p', s) w ss
 
 -- B8
 tick :: Tetris -> Maybe (Int, Tetris)
-tick t = Just (0, move (1, 0) t) 
+tick t
+  | collision newState = dropNewPiece t 
+  | otherwise          = Just (0, newState)
+ where
+    newState = move (1, 0) t
+
+-- * Task C1: Collision detection
+
+collision :: Tetris -> Bool
+collision (Tetris (p@(py, px), s) w _)
+   | px < 0                    = True
+   | px + sw > ww              = True
+   | py + sh > wh              = True
+   | place (p, s) `overlaps` w = True
+   | otherwise                 = False
+   where
+      (sh,sw) = shapeSize s
+      (wh,ww) = shapeSize w
+
+-- * Task C3: movePiece function
+
+movePiece :: Int -> Tetris -> Tetris
+movePiece n t
+  | collision newState = t
+  | otherwise          = newState
+  where
+    newState = move (0, n) t
+
+-- * Task C4: rotate function
+
+rotate :: Tetris -> Tetris
+rotate (Tetris (p, s) w ss) = Tetris (p, s') w ss
+  where
+    s' = rotateShape s
+
+-- * Task C5: adjust function (optional)
+-- Will be added if time permits 
+adjust :: Tetris -> Tetris
+adjust = undefined
+
+-- * Task C6: handle rotate action
+rotatePiece :: Tetris -> Tetris
+rotatePiece t
+  | collision newState = t
+  | otherwise          = newState
+  where
+    newState = rotate t
+
+-- * Task C7: Piling up
+dropNewPiece:: Tetris -> Maybe (Int, Tetris)
+dropNewPiece (Tetris p w (s:ss)) 
+  | place p' `overlaps` w' = Nothing
+  | otherwise              = Just (n, t')
+  where
+    t'      = Tetris p' w' ss
+    p'      = (startPosition, s)
+    (n, w') = clearLines $ combine (place p) w
+
+-- * Task C9: clearing rows
+clearLines :: Shape -> (Int, Shape)
+clearLines (Shape rs) = (n, s')
+   where
+      rs' = filter (not . all isJust) rs
+      n   = length rs - length rs'
+      s'  = shiftShape (n,0) (Shape rs')
 
 -- | React to input. The function returns 'Nothing' when it's game over,
 -- and @'Just' (n,t)@, when the game continues in a new state @t@.
 stepTetris :: Action -> Tetris -> Maybe (Int, Tetris)
-stepTetris Tick = tick
-stepTetris _    = undefined
+stepTetris Tick      t = tick t
+stepTetris MoveDown  t = tick t
+stepTetris MoveLeft  t = Just (0, movePiece (-1) t)
+stepTetris MoveRight t = Just (0, movePiece 1 t)
+stepTetris Rotate    t = Just (0, rotatePiece t) 
