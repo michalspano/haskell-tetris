@@ -85,11 +85,10 @@ emptyShape (rows, cols) = Shape (replicate rows (replicate cols Nothing))
 
 -- | The size (rows and columns) of a shape
 shapeSize :: Shape -> (Int, Int)
-shapeSize s = (rowCount, colCount) 
+shapeSize (Shape rows) = (rowCount, colCount)
   where
-    rows'    = rows s
-    rowCount = length rows'
-    colCount = length (head rows')
+    rowCount = length rows
+    colCount = length (head rows)
 
 -- ** A3
 
@@ -115,7 +114,7 @@ prop_Shape s
     (rowCount, colCount) = shapeSize s
 
 isRectangular :: Shape -> Bool
-isRectangular (Shape rows) = and [n == length s' | s' <- rows]
+isRectangular (Shape rows) = and [n == length r | r <- tail rows]
   where
     n = length (head rows)
 
